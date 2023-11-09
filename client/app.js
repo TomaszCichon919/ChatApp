@@ -19,7 +19,7 @@ const login = (event) => {
         loginForm.classList.remove('show');
         messagesSection.classList.add('show');
         userName = userNameValue;
-        socket.emit('join', {login: userName})
+        socket.emit('join', { login: userName })
     }
 }
 
@@ -36,6 +36,21 @@ const addMessage = (author, content) => {
       </div>
     `;
     messagesList.appendChild(message);
+}
+
+const userLog = (user, content) => {
+
+    const message = document.createElement('li');
+    message.classList.add('message');
+    message.classList.add('message--received');
+    message.innerHTML = `
+      <h3 class="message__author">Chat Bot</h3>
+      <div class="message__content">
+        <p class="message_chatbot">${user}  ${content}</p>
+      </div>
+    `;
+    messagesList.appendChild(message);
+
 }
 
 const sendMessage = (event) => {
@@ -56,32 +71,6 @@ loginForm.addEventListener('submit', login);
 addMessageForm.addEventListener('submit', sendMessage);
 
 socket.on('message', ({ author, content }) => addMessage(author, content));
-socket.on('newUser', (user) => newUser(user));
-socket.on('userDisconnected', (disconnectedUser) => {
-    const message = document.createElement('li');
-    message.classList.add('message');
-    message.classList.add('message--received');
-    message.innerHTML = `
-        <h3 class="message__author">Chat Bot</h3>
-        <div class="message__content">
-            <p class="message_chatbot">${disconnectedUser} has left the conversation...</p>
-        </div>
-    `;
-    messagesList.appendChild(message);
-});
+socket.on('newUser', (user) => userLog(user, "has joined the conversation"));
+socket.on('userDisconnected', (disconnectedUser) => userLog(disconnectedUser, "has left the conversation.."));
 
-
-const newUser = (user) => {
-
-    const message = document.createElement('li');
-    message.classList.add('message');
-    message.classList.add('message--received');
-    message.innerHTML = `
-      <h3 class="message__author">Chat Bot</h3>
-      <div class="message__content">
-        <p class="message_chatbot">${user} Has joined the conversation!</p>
-      </div>
-    `;
-    messagesList.appendChild(message);
-
-}
