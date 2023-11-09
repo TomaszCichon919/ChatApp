@@ -100,6 +100,11 @@ p {
   max-width: 200px;
 }
 
+.message_chatbot {
+    font-style: italic;
+    color: #fff;
+}
+
 .message--self .message__content {
   background: #3498db;
 }
