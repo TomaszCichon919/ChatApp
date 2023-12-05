@@ -9,6 +9,27 @@ const messageContentInput = document.getElementById("message-content");
 
 let userName = '';
 
+const messageSound = new Audio('beep.wav'); 
+
+window.addEventListener('DOMContentLoaded', async () => {
+  try {
+      // Fetch messages from the database
+      const response = await fetch('/api/messages');
+      const data = await response.json();
+      
+      // Iterate over the messages and display them
+      data.forEach((message) => {
+          addMessage(message.author, message.content);
+      });
+  } catch (error) {
+      console.error('Error fetching previous messages:', error);
+  }
+});
+
+const playMessageSound = () => {
+  messageSound.play();
+};
+
 const login = (event) => {
     event.preventDefault();
     const userNameValue = userNameInput.value;
@@ -35,6 +56,9 @@ const addMessage = (author, content) => {
         ${content}
       </div>
     `;
+    if (author !== userName) {
+      playMessageSound();
+    }
     messagesList.appendChild(message);
 }
 
@@ -53,19 +77,34 @@ const userLog = (user, content) => {
 
 }
 
-const sendMessage = (event) => {
-    event.preventDefault();
+const sendMessage = async (event) => {
+  event.preventDefault();
 
-    let messageContent = messageContentInput.value;
+  let messageContent = messageContentInput.value;
 
-    if (!messageContent.length) {
-        alert('Please input message')
-    } else {
-        addMessage(userName, messageContentInput.value)
-        socket.emit('message', { author: userName, content: messageContent })
-        messageContentInput.value = '';
-    }
-}
+  if (!messageContent.length) {
+      alert('Please input message');
+  } else {
+      addMessage(userName, messageContentInput.value);
+      socket.emit('message', { author: userName, content: messageContent });
+      messageContentInput.value = '';
+
+      try {
+          // Save the message to the database
+          await fetch('/api/messages', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ author: userName, content: messageContent }),
+          });
+      } catch (error) {
+          console.error('Error saving message:', error);
+      }
+  }
+};
+  
+   
 
 loginForm.addEventListener('submit', login);
 addMessageForm.addEventListener('submit', sendMessage);
